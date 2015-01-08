@@ -47,55 +47,54 @@ int f_device_open(int descriptor) {
 	return result;
 }
 
-void p_device_status_retrieve(void) {
-	static unsigned char *device_status = "$00I\r\n", *device_rc = "\r\n";
-	unsigned char buffer[d_death_valley_device_size], *pointer, *next;
-	int readed, index = 0, step = 0;
+void p_device_status_retrieve_log(void) {
+	time_t current_timestamp = time(NULL);
 	FILE *stream;
+	if ((stream = fopen(d_death_valley_device_log, "a"))) {
+		fprintf(stream, "%ld: %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f | %d%d%d\n", current_timestamp,
+				tc_status.temperature[e_device_temperature_main_actual], tc_status.temperature[e_device_temperature_main_nominal],
+				tc_status.temperature[e_device_temperature_pt100_A_actual], tc_status.temperature[e_device_temperature_pt100_A_nominal],
+				tc_status.temperature[e_device_temperature_pt100_B_actual], tc_status.temperature[e_device_temperature_pt100_B_nominal],
+				tc_status.temperature[e_device_temperature_pt100_C_actual], tc_status.temperature[e_device_temperature_pt100_C_nominal],
+				tc_status.temperature[e_device_temperature_pt100_D_actual], tc_status.temperature[e_device_temperature_pt100_D_nominal],
+				tc_status.temperature[e_device_temperature_fan_actual], tc_status.temperature[e_device_temperature_fan_nominal],
+				tc_status.flag[e_device_flag_start], tc_status.flag[e_device_flag_dehumidifier], tc_status.flag[e_device_flag_co2]);
+		fclose(stream);
+	}
+}
+
+void p_device_status_retrieve(void) {
+	static unsigned char *device_status = "$00I\r", *device_rc = "\r";
+	unsigned char buffer[d_death_valley_device_size], *pointer, *next;
+	int readed, done = d_false, tries = 0, index = 0, step = 0;
 	if (tc_descriptor != d_rs232_null)
-		if ((f_rs232_write(tc_descriptor, device_status, f_string_strlen(device_status))) > 0) {
-			memset(buffer, 0, d_death_valley_device_size);
-			if ((readed = f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL, device_rc,
-							f_string_strlen(device_rc))) > 0) {
-				pointer = buffer;
-				while ((step < e_device_temperature_null) && (next = strchr(pointer, ' '))) {
-					*next = '\0';
-					if (tc_status.submitted.temperature[step])
-						tc_status.temperature[step] = atof(pointer);
-					step++;
-					pointer = (next+1);
-				}
-				if (f_string_strlen(pointer) > e_device_flag_null)
-					for (index = 0, step = 0; index < e_device_flag_null; ++index) {
-						if (*pointer != ' ') {
-							if (tc_status.submitted.flag[step])
-								tc_status.flag[step] = (*pointer=='1')?d_true:d_false;
-							step++;
-						}
-						pointer++;
+		do {
+			if ((f_rs232_write(tc_descriptor, device_status, f_string_strlen(device_status))) > 0) {
+				memset(buffer, 0, d_death_valley_device_size);
+				if ((readed = f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL,
+								device_rc, f_string_strlen(device_rc))) > 0) {
+					pointer = buffer;
+					while ((step < e_device_temperature_null) && (next = strchr(pointer, ' '))) {
+						*next = '\0';
+						if (tc_status.submitted.temperature[step])
+							tc_status.temperature[step] = atof(pointer);
+						step++;
+						pointer = (next+1);
 					}
-				if ((stream = fopen(d_death_valley_device_log, "a"))) {
-					fprintf(stream, "%ld: %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f | %d%d%d\n", time(NULL),
-							tc_status.temperature[e_device_temperature_main_actual],
-							tc_status.temperature[e_device_temperature_main_nominal],
-							tc_status.temperature[e_device_temperature_pt100_A_actual],
-							tc_status.temperature[e_device_temperature_pt100_A_nominal],
-							tc_status.temperature[e_device_temperature_pt100_B_actual],
-							tc_status.temperature[e_device_temperature_pt100_B_nominal],
-							tc_status.temperature[e_device_temperature_pt100_C_actual],
-							tc_status.temperature[e_device_temperature_pt100_C_nominal],
-							tc_status.temperature[e_device_temperature_pt100_D_actual],
-							tc_status.temperature[e_device_temperature_pt100_D_nominal],
-							tc_status.temperature[e_device_temperature_fan_actual],
-							tc_status.temperature[e_device_temperature_fan_nominal],
-							tc_status.flag[e_device_flag_start],
-							tc_status.flag[e_device_flag_dehumidifier],
-							tc_status.flag[e_device_flag_co2]);
-					fclose(stream);
+					if (f_string_strlen(pointer) > e_device_flag_null)
+						for (index = 0, step = 0; index < e_device_flag_null; ++index) {
+							if (*pointer != ' ') {
+								if (tc_status.submitted.flag[step])
+									tc_status.flag[step] = (*pointer=='1')?d_true:d_false;
+								step++;
+							}
+							pointer++;
+						}
+					p_device_status_retrieve_log();
+					done = d_true;
 				}
 			}
-		}
-
+		} while ((!done) && (tries++ < d_death_valley_device_tries));
 }
 
 void p_device_status_temperature(const char *kind, enum e_device_temperatures actual, enum e_device_temperatures nominal, int output) {
@@ -130,9 +129,9 @@ int f_device_status(char **tokens, size_t element, int output) {
 }
 
 int f_device_configure(char **tokens, size_t elements, int output) {
-	static unsigned char *device_configure = "$00E", *device_rc = "\r\n";
+	static unsigned char *device_configure = "$00E", *device_rc = "\r";
 	unsigned char buffer_command[d_death_valley_device_size], buffer[d_death_valley_device_size], message[d_string_buffer_size], *pointer;
-	int index, result = d_true;
+	int index, done = d_false, tries = 0, result = d_true;
 	if (tc_descriptor != d_rs232_null) {
 		memset(buffer_command, 0, d_death_valley_device_size);
 		snprintf(buffer_command, d_death_valley_device_size, "%s %06.01f %06.01f %06.01f %06.01f %06.01f %06.01f 0000000000000000%s",
@@ -143,16 +142,20 @@ int f_device_configure(char **tokens, size_t elements, int output) {
 		pointer = buffer_command+d_death_valley_device_configure_prefix;
 		for (index = 0; index < e_device_flag_null; ++pointer, ++index)
 			*pointer = (tc_status.flag[index])?'1':'0';
-		if ((f_rs232_write(tc_descriptor, buffer_command, f_string_strlen(buffer_command))) > 0) {
-			f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size, d_death_valley_device_timeout, NULL, device_rc,
-					f_string_strlen(device_rc));
-			memset(&(tc_status.submitted), d_true, sizeof(struct s_device_status_submitted));
-			if (output != d_console_descriptor_null) {
-				snprintf(message, d_string_buffer_size, "a new configuration has been written:\n%s%s%s",
-						v_console_styles[e_console_style_bold], buffer_command, v_console_styles[e_console_style_reset]);
-				write(output, message, f_string_strlen(message));
-			}
-		}
+		do {
+			if (f_rs232_write(tc_descriptor, buffer_command, f_string_strlen(buffer_command)) > 0)
+				if (f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size, d_death_valley_device_timeout, NULL, device_rc,
+							f_string_strlen(device_rc)) > 0) {
+					memset(&(tc_status.submitted), d_true, sizeof(struct s_device_status_submitted));
+					if (output != d_console_descriptor_null) {
+						snprintf(message, d_string_buffer_size, "a new configuration has been written:\n%s%s%s",
+								v_console_styles[e_console_style_bold], buffer_command,
+								v_console_styles[e_console_style_reset]);
+						write(output, message, f_string_strlen(message));
+					}
+					done = d_true;
+				}
+		} while ((!done) && (tries++ < d_death_valley_device_tries));
 	}
 	return result;
 }

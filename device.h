@@ -22,11 +22,12 @@
 #define d_death_valley_device "/dev/tty.usbserial"
 #define d_death_valley_device_log "death_valley.log"
 #define d_death_valley_device_size 128
-#define d_death_valley_device_timeout 1000
+#define d_death_valley_device_timeout 250000
 #define d_death_valley_device_sensors 4
 #define d_death_valley_device_configure_prefix 47
 #define d_death_valley_device_wait 500000
 #define d_death_valley_device_configuration_null -1
+#define d_death_valley_device_tries 5
 extern int tc_descriptor;
 typedef enum e_device_temperatures {
 	e_device_temperature_main_nominal = 0,
@@ -85,6 +86,7 @@ extern int tc_descriptor, tc_interrupt, tc_show;
 extern struct s_device_status tc_status;
 extern struct s_device_configuration tc_configuration[];
 extern int f_device_open(int descriptor);
+extern void p_device_status_retrieve_log(void);
 extern void p_device_status_retrieve(void);
 extern void p_device_status_temperature(const char *kind, enum e_device_temperatures actual, enum e_device_temperatures nominal, int output);
 extern void p_device_status_flag(const char *kind, enum e_device_flags flag, int output);
