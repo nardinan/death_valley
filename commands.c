@@ -59,9 +59,17 @@ struct s_console_command v_commands[] = {
 	d_death_valley_commands_SET(chamber,"(usage: start -on | start -off) this command turns on/off the thermal chamber"),
 	d_death_valley_commands_SET(dehumidifier, "(usage: dehumidifier -on | dehumidifier -off) this command turns on/off the dehumidifier of the chamber"),
 	d_death_valley_commands_SET(co2, "(usage: co2 -on | co2 -off) this command turns on/off the CO2 cooler"),
+	{"load", "(usage: load -f /path/file.dv) this command runs a batch of actions",
+		(struct s_console_parameter[]){
+			{"-f", "(string) path to the file", d_false, d_false, d_true},
+			{.initialized = d_false}
+		},
+		&f_commands_load, e_console_level_guest, d_true
+	},
 	{.initialized = d_false}
 };
-
+char v_commands_queue[d_death_valley_commands_queue][d_string_buffer_size];
+int v_commands_pointer = d_death_valley_commands_empty_queue;
 int f_commands_status(struct s_console *console, struct s_console_command *command, char **tokens, size_t elements, int output) {
 	return f_device_status(tokens, elements, output);
 }
@@ -103,3 +111,28 @@ int f_commands_set_co2(struct s_console *console, struct s_console_command *comm
 	return f_device_set_co2(tokens, elements, output);
 }
 
+int f_commands_load(struct s_console *console, struct s_console_command *command, char **tokens, size_t elements, int output) {
+	char message[d_string_buffer_size], buffer[d_string_buffer_size], *pointer, *raw_file = tokens[f_console_parameter("-f", tokens, elements, d_false)];
+	FILE *stream;
+	int result = d_false, index = 0;
+	memset(v_commands_queue, 0, (d_death_valley_commands_queue*d_string_buffer_size));
+	v_commands_pointer = d_death_valley_commands_empty_queue;
+	if ((stream = fopen(raw_file, "r"))) {
+		while (!feof(stream))
+			if (fgets(buffer, d_string_buffer_size, stream)) {
+				if ((pointer = strchr(buffer, '#')))
+					*pointer = '\0';
+				f_string_trim(buffer);
+				if (f_string_strlen(buffer) > 0)
+					strncpy(v_commands_queue[index++], buffer, d_string_buffer_size);
+			}
+		fclose(stream);
+		if (index > 0)
+			v_commands_pointer = 0;
+		result = d_true;
+	} else if (output != d_console_descriptor_null) {
+		snprintf(message, d_string_buffer_size, "file \"%s\" not found\n", raw_file);
+		write(output, message, f_string_strlen(message));
+	}
+	return result;
+}

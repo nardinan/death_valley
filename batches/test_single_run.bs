@@ -1,0 +1,13 @@
+# a simple script that set the 
+chamber -on
+configure
+sleep -s 3 # wait for 3 seconds
+set -k main -v 100
+configure
+test -k main -bt 95 -w 
+#waiting for the temperature
+set -k main -v 0
+configure
+test -k main -lt 20 -w
+chamber -off
+configure

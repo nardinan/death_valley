@@ -21,6 +21,7 @@
 #define d_death_valley_loop_sleep 100
 #define d_death_valley_loop_status 2	/* seconds */
 #define d_death_valley_console_wait 10
+#define d_death_valley_new_line "\n"
 struct s_console *console;
 struct s_console_input input = { .ready = d_true };
 void p_death_valley_sigpipe_ignore(int signal) {
@@ -53,7 +54,18 @@ int main (int argc, char *argv[]) {
 		f_device_configure(NULL, 0, d_console_descriptor_null);
 		before = current = time(NULL);
 		while (d_true) {
-			f_console_read(console, &input, STDOUT_FILENO, 0, d_death_valley_console_wait);
+			if ((v_commands_pointer != d_death_valley_commands_empty_queue) && (f_string_strlen(v_commands_queue[v_commands_pointer]) > 0)) {
+				memset(input.input, 0, d_string_buffer_size);
+				strcpy(input.input, v_commands_queue[v_commands_pointer]);
+				strcat(input.input, d_death_valley_new_line);
+				input.data_length = input.data_pointer = f_string_strlen(input.input);
+				f_console_refresh(console, &input, STDOUT_FILENO);
+				input.ready = d_true;
+				v_commands_pointer++;
+			} else {
+				v_commands_pointer = d_death_valley_commands_empty_queue;
+				f_console_read(console, &input, STDOUT_FILENO, 0, d_death_valley_console_wait);
+			}
 			if (input.ready) {
 				if (f_string_strcmp(input.input, d_death_valley_exit_command) == 0)
 					break;
