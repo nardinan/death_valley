@@ -51,6 +51,7 @@ void p_device_status_retrieve(void) {
 	static unsigned char *device_status = "$00I\r\n", *device_rc = "\r\n";
 	unsigned char buffer[d_death_valley_device_size], *pointer, *next;
 	int readed, index = 0, step = 0;
+	FILE *stream;
 	if (tc_descriptor != d_rs232_null)
 		if ((f_rs232_write(tc_descriptor, device_status, f_string_strlen(device_status))) > 0) {
 			memset(buffer, 0, d_death_valley_device_size);
@@ -73,6 +74,25 @@ void p_device_status_retrieve(void) {
 						}
 						pointer++;
 					}
+				if ((stream = fopen(d_death_valley_device_log, "wa"))) {
+					fprintf(stream, "%ld: %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f | %d%d%d\n", time(NULL),
+							tc_status.temperature[e_device_temperature_main_actual],
+							tc_status.temperature[e_device_temperature_main_nominal],
+							tc_status.temperature[e_device_temperature_pt100_A_actual],
+							tc_status.temperature[e_device_temperature_pt100_A_nominal],
+							tc_status.temperature[e_device_temperature_pt100_B_actual],
+							tc_status.temperature[e_device_temperature_pt100_B_nominal],
+							tc_status.temperature[e_device_temperature_pt100_C_actual],
+							tc_status.temperature[e_device_temperature_pt100_C_nominal],
+							tc_status.temperature[e_device_temperature_pt100_D_actual],
+							tc_status.temperature[e_device_temperature_pt100_D_nominal],
+							tc_status.temperature[e_device_temperature_fan_actual],
+							tc_status.temperature[e_device_temperature_fan_nominal],
+							tc_status.flag[e_device_flag_start],
+							tc_status.flag[e_device_flag_dehumidifier],
+							tc_status.flag[e_device_flag_co2]);
+					fclose(stream);
+				}
 			}
 		}
 

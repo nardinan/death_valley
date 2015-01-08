@@ -20,6 +20,7 @@
 #include <miranda/ground.h>
 #include "commands.h"
 #define d_death_valley_device "/dev/tty.usbserial"
+#define d_death_valley_device_log "death_valley.log"
 #define d_death_valley_device_size 128
 #define d_death_valley_device_timeout 1000
 #define d_death_valley_device_sensors 4
