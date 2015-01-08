@@ -1,13 +1,24 @@
 # a simple script that set the 
+# waiting for an hour
+sleep -s 3600
+# temperature 100
+set -k main -v 100
 chamber -on
 configure
-sleep -s 3 # wait for 3 seconds
+test -k main -bt 95 -w
+# temperature -45
+set -k main -v -40
+configure
+test -k main -lt -35 -w
+# temperature 100
 set -k main -v 100
 configure
-test -k main -bt 95 -w 
-#waiting for the temperature
-set -k main -v 0
+test -k main -bt 95 -w
+sleep -s 3600
+# temperature 20
+set -k main -v 10
 configure
-test -k main -lt 20 -w
+test -k main -lt 15
+# off
 chamber -off
 configure
