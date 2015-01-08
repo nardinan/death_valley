@@ -74,7 +74,7 @@ void p_device_status_retrieve(void) {
 						}
 						pointer++;
 					}
-				if ((stream = fopen(d_death_valley_device_log, "wa"))) {
+				if ((stream = fopen(d_death_valley_device_log, "a"))) {
 					fprintf(stream, "%ld: %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f | %d%d%d\n", time(NULL),
 							tc_status.temperature[e_device_temperature_main_actual],
 							tc_status.temperature[e_device_temperature_main_nominal],

@@ -93,6 +93,8 @@ int f_commands_wait(struct s_console *console, struct s_console_command *command
 	tc_interrupt = d_false;
 	begin = current = time(NULL);
 	while ((!tc_interrupt) && ((current-begin) < value)) {
+		if (((current-begin)%d_death_valley_commands_wait_steps) == 0)
+			p_device_status_retrieve();
 		usleep(d_death_valley_commands_wait);
 		current = time(NULL);
 	}
