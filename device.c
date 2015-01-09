@@ -148,7 +148,7 @@ int f_device_configure(char **tokens, size_t elements, int output) {
 				if (f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size, d_death_valley_device_timeout, NULL, NULL, 0) > 0) {
 					memset(&(tc_status.submitted), d_true, sizeof(struct s_device_status_submitted));
 					if (output != d_console_descriptor_null) {
-						snprintf(message, d_string_buffer_size, "(%d) a new configuration has been written:\n%s%s%s\n", tries,
+						snprintf(message, d_string_buffer_size, "a new configuration has been written:\n%s%s%s",
 								v_console_styles[e_console_style_bold], buffer_command,
 								v_console_styles[e_console_style_reset]);
 						write(output, message, f_string_strlen(message));
