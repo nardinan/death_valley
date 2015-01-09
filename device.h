@@ -25,12 +25,11 @@
 #define d_death_valley_device_timeout 75000
 #define d_death_valley_device_sensors 4
 #define d_death_valley_device_configure_prefix 47
-#define d_death_valley_device_wait 500000
+#define d_death_valley_device_wait 1000000
 #define d_death_valley_device_configuration_null -1
 #define d_death_valley_device_tries 5
-#define d_death_valley_device_answer_extra_tail 2
-#define d_death_valley_device_answer_size (100+1+d_death_valley_device_answer_extra_tail) /* 100 character + <CR> + 2 times '\0' */
-extern int tc_descriptor;
+#define d_death_valley_device_answer_extra_tail 3
+#define d_death_valley_device_answer_size (100+1+d_death_valley_device_answer_extra_tail) /* 100 character + <CR> + 3 times '\0' */
 typedef enum e_device_temperatures {
 	e_device_temperature_main_nominal = 0,
 	e_device_temperature_main_actual,
@@ -84,7 +83,8 @@ typedef struct s_device_configuration {
 	char *value, *description;
 	enum e_device_temperatures temperature, actual_temperature;
 } s_device_configuration;
-extern int tc_descriptor, tc_interrupt, tc_show;
+extern char tc_device_link[d_string_buffer_size];
+extern int tc_descriptor, tc_interrupt;
 extern struct s_device_status tc_status;
 extern struct s_device_configuration tc_configuration[];
 extern int f_device_open(int descriptor);

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "device.h"
+char tc_device_link[d_string_buffer_size];
 int tc_descriptor = d_rs232_null, tc_interrupt;
 struct s_device_status tc_status;
 struct s_device_configuration tc_configuration[] = {
@@ -31,7 +32,7 @@ int f_device_open(int descriptor) {
 	char buffer[d_string_buffer_size];
 	int result = d_true;
 	if (tc_descriptor == d_rs232_null) {
-		if ((result = f_rs232_open(d_death_valley_device, e_rs232_baud_9600, e_rs232_bits_8, e_rs232_stops_1_bit, e_rs232_parity_no,
+		if ((result = f_rs232_open(tc_device_link, e_rs232_baud_9600, e_rs232_bits_8, e_rs232_stops_1_bit, e_rs232_parity_no,
 						e_rs232_flow_control_software, &tc_descriptor, NULL))) {
 			memset(&(tc_status.submitted), d_true, sizeof(struct s_device_status_submitted));
 			snprintf(buffer, d_string_buffer_size, "chamber VT4010 is ready and %sonline%s!\n", v_console_styles[e_console_style_green],

@@ -49,45 +49,51 @@ int f_death_valley_init(int descriptor) {
 int main (int argc, char *argv[]) {
 	time_t before, current;
 	f_memory_init();
-	if (f_death_valley_init(STDOUT_FILENO)) {
-		signal(SIGPIPE, p_death_valley_sigpipe_ignore);
-		signal(SIGINT, p_death_valley_sigint_interrupt);
-		f_device_configure(NULL, 0, d_console_descriptor_null);
-		before = current = time(NULL);
-		while (d_true) {
-			if ((v_commands_pointer != d_death_valley_commands_empty_queue) && (f_string_strlen(v_commands_queue[v_commands_pointer]) > 0)) {
-				memset(input.input, 0, d_string_buffer_size);
-				strcpy(input.input, v_commands_queue[v_commands_pointer]);
-				strcat(input.input, d_death_valley_new_line);
-				input.data_length = input.data_pointer = f_string_strlen(input.input);
-				f_console_refresh(console, &input, STDOUT_FILENO);
-				input.ready = d_true;
-				v_commands_pointer++;
-			} else {
-				v_commands_pointer = d_death_valley_commands_empty_queue;
-				f_console_read(console, &input, STDOUT_FILENO, 0, d_death_valley_console_wait);
+	/* example ./death_valley.bin /dev/ttyUSB0 */
+	if (argc == 2) {
+		strncpy(tc_device_link, argv[1], d_string_buffer_size);
+		if (f_death_valley_init(STDOUT_FILENO)) {
+			signal(SIGPIPE, p_death_valley_sigpipe_ignore);
+			signal(SIGINT, p_death_valley_sigint_interrupt);
+			f_device_configure(NULL, 0, d_console_descriptor_null);
+			before = current = time(NULL);
+			while (d_true) {
+				if ((v_commands_pointer != d_death_valley_commands_empty_queue) &&
+						(f_string_strlen(v_commands_queue[v_commands_pointer]) > 0)) {
+					memset(input.input, 0, d_string_buffer_size);
+					strcpy(input.input, v_commands_queue[v_commands_pointer]);
+					strcat(input.input, d_death_valley_new_line);
+					input.data_length = input.data_pointer = f_string_strlen(input.input);
+					f_console_refresh(console, &input, STDOUT_FILENO);
+					input.ready = d_true;
+					v_commands_pointer++;
+				} else {
+					v_commands_pointer = d_death_valley_commands_empty_queue;
+					f_console_read(console, &input, STDOUT_FILENO, 0, d_death_valley_console_wait);
+				}
+				if (input.ready) {
+					if (f_string_strcmp(input.input, d_death_valley_exit_command) == 0)
+						break;
+					f_console_execute(console, &input, STDOUT_FILENO);
+				}
+				f_device_open(d_console_descriptor_null);
+				if (tc_descriptor == d_rs232_null)
+					snprintf(console->prefix, d_string_buffer_size, "\r[%sdisconnected%s]> ", v_console_styles[e_console_style_red],
+							v_console_styles[e_console_style_reset]);
+				else
+					snprintf(console->prefix, d_string_buffer_size, "\r[%sconnected%s]> ", v_console_styles[e_console_style_green],
+							v_console_styles[e_console_style_reset]);
+				usleep(d_death_valley_loop_sleep);
+				current = time(NULL);
+				if ((current-before) > d_death_valley_loop_status) {
+					p_device_status_retrieve();
+					before = current;
+				}
 			}
-			if (input.ready) {
-				if (f_string_strcmp(input.input, d_death_valley_exit_command) == 0)
-					break;
-				f_console_execute(console, &input, STDOUT_FILENO);
-			}
-			f_device_open(d_console_descriptor_null);
-			if (tc_descriptor == d_rs232_null)
-				snprintf(console->prefix, d_string_buffer_size, "\r[%sdisconnected%s]> ", v_console_styles[e_console_style_red],
-						v_console_styles[e_console_style_reset]);
-			else
-				snprintf(console->prefix, d_string_buffer_size, "\r[%sconnected%s]> ", v_console_styles[e_console_style_green],
-						v_console_styles[e_console_style_reset]);
-			usleep(d_death_valley_loop_sleep);
-			current = time(NULL);
-			if ((current-before) > d_death_valley_loop_status) {
-				p_device_status_retrieve();
-				before = current;
-			}
+			f_console_destroy(&console);
 		}
-		f_console_destroy(&console);
-	}
+	} else
+		fprintf(stderr, "usage: %s <path to USB-Serial device>\n", argv[0]);
 	f_memory_destroy();
 	return 0;
 }
