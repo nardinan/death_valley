@@ -64,15 +64,15 @@ void p_device_status_retrieve_log(void) {
 }
 
 void p_device_status_retrieve(void) {
-	static unsigned char *device_status = "$00I\r", *device_rc = "\r";
+	static unsigned char *device_status = "$00I\r\n";
 	unsigned char buffer[d_death_valley_device_size], *pointer, *next;
 	int readed, done = d_false, tries = 0, index = 0, step = 0;
 	if (tc_descriptor != d_rs232_null)
 		do {
 			if ((f_rs232_write(tc_descriptor, device_status, f_string_strlen(device_status))) > 0) {
 				memset(buffer, 0, d_death_valley_device_size);
-				if ((readed = f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL,
-								device_rc, f_string_strlen(device_rc))) > 0) {
+				if (((readed = f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL,
+								NULL, 0)) > 0) && (readed == d_death_valley_device_answer_size)) {
 					pointer = buffer;
 					while ((step < e_device_temperature_null) && (next = strchr(pointer, ' '))) {
 						*next = '\0';
@@ -129,7 +129,7 @@ int f_device_status(char **tokens, size_t element, int output) {
 }
 
 int f_device_configure(char **tokens, size_t elements, int output) {
-	static unsigned char *device_configure = "$00E", *device_rc = "\r";
+	static unsigned char *device_configure = "$00E", *device_rc = "\r\n";
 	unsigned char buffer_command[d_death_valley_device_size], buffer[d_death_valley_device_size], message[d_string_buffer_size], *pointer;
 	int index, done = d_false, tries = 0, result = d_true;
 	if (tc_descriptor != d_rs232_null) {
@@ -143,12 +143,11 @@ int f_device_configure(char **tokens, size_t elements, int output) {
 		for (index = 0; index < e_device_flag_null; ++pointer, ++index)
 			*pointer = (tc_status.flag[index])?'1':'0';
 		do {
-			if (f_rs232_write(tc_descriptor, buffer_command, f_string_strlen(buffer_command)) > 0)
-				if (f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size, d_death_valley_device_timeout, NULL, device_rc,
-							f_string_strlen(device_rc)) > 0) {
+			if (f_rs232_write(tc_descriptor, buffer_command, f_string_strlen(buffer_command)+d_death_valley_device_answer_extra_tail) > 0)
+				if (f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size, d_death_valley_device_timeout, NULL, NULL, 0) > 0) {
 					memset(&(tc_status.submitted), d_true, sizeof(struct s_device_status_submitted));
 					if (output != d_console_descriptor_null) {
-						snprintf(message, d_string_buffer_size, "a new configuration has been written:\n%s%s%s",
+						snprintf(message, d_string_buffer_size, "(%d) a new configuration has been written:\n%s%s%s\n", tries,
 								v_console_styles[e_console_style_bold], buffer_command,
 								v_console_styles[e_console_style_reset]);
 						write(output, message, f_string_strlen(message));

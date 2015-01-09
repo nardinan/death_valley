@@ -22,12 +22,14 @@
 #define d_death_valley_device "/dev/tty.usbserial"
 #define d_death_valley_device_log "death_valley.log"
 #define d_death_valley_device_size 128
-#define d_death_valley_device_timeout 250000
+#define d_death_valley_device_timeout 75000
 #define d_death_valley_device_sensors 4
 #define d_death_valley_device_configure_prefix 47
 #define d_death_valley_device_wait 500000
 #define d_death_valley_device_configuration_null -1
 #define d_death_valley_device_tries 5
+#define d_death_valley_device_answer_extra_tail 2
+#define d_death_valley_device_answer_size (100+1+d_death_valley_device_answer_extra_tail) /* 100 character + <CR> + 2 times '\0' */
 extern int tc_descriptor;
 typedef enum e_device_temperatures {
 	e_device_temperature_main_nominal = 0,
