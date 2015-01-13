@@ -1,0 +1,37 @@
+# a simple script that set the 
+# waiting for an hour
+sleep -s 3600
+# single SSD thermic test
+# 1h - 20
+# 2h - 40
+# 2h - 60
+# 2h - 0
+# 2h - -20
+# 2h - -40
+# 2h = 20
+# total 13 hours
+set -k main -v 20
+chamber -on
+configure
+sleep -s 3600
+set -k main -v 40
+configure
+sleep -s 7200
+set -k main -v 60
+configure
+sleep -s 7200
+set -k main -v 0
+configure
+sleep -s 7200
+set -k main -v -20
+configure
+sleep -s 7200
+set -k main -v -40
+configure
+sleep -s 7200
+set -k main -v 20
+configure
+sleep -s 7200
+chamber -off
+configure
+
