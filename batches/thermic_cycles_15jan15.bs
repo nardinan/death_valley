@@ -1,0 +1,130 @@
+# a simple script that set the 
+# waiting for an hour
+sleep -s 3600
+# single SSD thermic test
+# wait until -30C
+# 6h - from -30C to +60C (+5 every 20 minutes)
+# 6h - from +60C to -30C (-5 every 20 minutes)
+# wait until +20C
+# total 12 hours + something else
+set -k main -v -40
+chamber -on
+configure
+test -k main -lt -30 -w
+set -k main -v -30
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -25
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -20
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -15
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -10
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -5
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 0
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 5
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 10
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 15
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 20
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 25
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 30
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 35
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 40
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 45
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 50
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 55
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 60
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 55
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 50
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 45
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 40
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 35
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 30
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 25
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 20
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 15
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 10
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 5
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 0
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -5
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -10
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -15
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -20
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -25
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v -30
+configure
+sleep -s 1200 # 20 minutes
+set -k main -v 25
+configure
+test -k main -bt 20 -w
+chamber -off
+configure
+
