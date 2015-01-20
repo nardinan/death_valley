@@ -37,7 +37,7 @@ int f_death_valley_init(int descriptor) {
 	char buffer[d_string_buffer_size];
 	int status = d_true;
 	if (descriptor != d_console_descriptor_null) {
-		snprintf(buffer, d_string_buffer_size, "[Death Valley - %sVT4010%s series thermal chambers controller (version %s)]\n",
+		snprintf(buffer, d_string_buffer_size, "[Death Valley - %sVT4010%s series thermal devices controller (version %s)]\n",
 				v_console_styles[e_console_style_bold], v_console_styles[e_console_style_reset], d_death_valley_version);
 		write(descriptor, buffer, f_string_strlen(buffer));
 	}
@@ -50,8 +50,10 @@ int main (int argc, char *argv[]) {
 	time_t before, current;
 	f_memory_init();
 	/* example ./death_valley.bin /dev/ttyUSB0 */
-	if (argc == 2) {
+	if (argc >= 2) {
 		strncpy(tc_device_link, argv[1], d_string_buffer_size);
+		if (argc == 3)
+			strncpy(hu_device_link, argv[2], d_string_buffer_size);
 		if (f_death_valley_init(STDOUT_FILENO)) {
 			signal(SIGPIPE, p_death_valley_sigpipe_ignore);
 			signal(SIGINT, p_death_valley_sigint_interrupt);

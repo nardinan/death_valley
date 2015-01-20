@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "device.h"
-char tc_device_link[d_string_buffer_size];
-int tc_descriptor = d_rs232_null, tc_interrupt;
+char tc_device_link[d_string_buffer_size], hu_device_link[d_string_buffer_size];
+int tc_descriptor = d_rs232_null, tc_interrupt, hu_descriptor = d_rs232_null;
 struct s_device_status tc_status;
 struct s_device_configuration tc_configuration[] = {
 	{d_true, -100.0, 200.0, "main", "main   ", e_device_temperature_main_nominal, e_device_temperature_main_actual},
@@ -28,17 +28,17 @@ struct s_device_configuration tc_configuration[] = {
 	{d_true, 0, 100, "fan", "fan    ", e_device_temperature_fan_nominal, e_device_temperature_fan_actual},
 	{d_false}
 };
-int f_device_open(int descriptor) {
+int p_device_open_chamber(int descriptor) {
 	char buffer[d_string_buffer_size];
 	int result = d_true;
 	if (tc_descriptor == d_rs232_null) {
 		if ((result = f_rs232_open(tc_device_link, e_rs232_baud_9600, e_rs232_bits_8, e_rs232_stops_1_bit, e_rs232_parity_no,
 						e_rs232_flow_control_software, &tc_descriptor, NULL))) {
 			memset(&(tc_status.submitted), d_true, sizeof(struct s_device_status_submitted));
-			snprintf(buffer, d_string_buffer_size, "chamber VT4010 is ready and %sonline%s!\n", v_console_styles[e_console_style_green],
+			snprintf(buffer, d_string_buffer_size, "device VT4010 is ready and %sonline%s\n", v_console_styles[e_console_style_green],
 					v_console_styles[e_console_style_reset]);
 		} else {
-			snprintf(buffer, d_string_buffer_size, "chamber VT4010 is %soffline%s!\n", v_console_styles[e_console_style_red],
+			snprintf(buffer, d_string_buffer_size, "device VT4010 is %soffline%s\n", v_console_styles[e_console_style_red],
 					v_console_styles[e_console_style_reset]);
 			tc_descriptor = d_rs232_null;
 		}
@@ -48,23 +48,48 @@ int f_device_open(int descriptor) {
 	return result;
 }
 
+int p_device_open_humidity(int descriptor) {
+	char buffer[d_string_buffer_size];
+	int result = d_true;
+	if ((hu_descriptor == d_rs232_null) && (f_string_strlen(hu_device_link) > 0)) {
+		if ((result = f_rs232_open(hu_device_link, e_rs232_baud_19200, e_rs232_bits_8, e_rs232_stops_1_bit, e_rs232_parity_no,
+						e_rs232_flow_control_software, &hu_descriptor, NULL)))
+			snprintf(buffer, d_string_buffer_size, "humidity sensor is ready and %sonline%s\n", v_console_styles[e_console_style_green],
+					v_console_styles[e_console_style_reset]);
+		else {
+			snprintf(buffer, d_string_buffer_size, "humidity sensor is %soffline%s\n", v_console_styles[e_console_style_red],
+					v_console_styles[e_console_style_reset]);
+			hu_descriptor = d_rs232_null;
+		}
+		if (descriptor != d_console_descriptor_null)
+			write(descriptor, buffer, f_string_strlen(buffer));
+	}
+	return result;
+}
+
+int f_device_open(int descriptor) {
+	p_device_open_humidity(descriptor);
+	return p_device_open_chamber(descriptor);
+}
+
 void p_device_status_retrieve_log(void) {
 	time_t current_timestamp = time(NULL);
 	FILE *stream;
 	if ((stream = fopen(d_death_valley_device_log, "a"))) {
-		fprintf(stream, "%ld: %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f | %d%d%d\n", current_timestamp,
+		fprintf(stream, "%ld: %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f, %.02f/%.02f | %d%d%d | %.02f\n", current_timestamp,
 				tc_status.temperature[e_device_temperature_main_actual], tc_status.temperature[e_device_temperature_main_nominal],
 				tc_status.temperature[e_device_temperature_pt100_A_actual], tc_status.temperature[e_device_temperature_pt100_A_nominal],
 				tc_status.temperature[e_device_temperature_pt100_B_actual], tc_status.temperature[e_device_temperature_pt100_B_nominal],
 				tc_status.temperature[e_device_temperature_pt100_C_actual], tc_status.temperature[e_device_temperature_pt100_C_nominal],
 				tc_status.temperature[e_device_temperature_pt100_D_actual], tc_status.temperature[e_device_temperature_pt100_D_nominal],
 				tc_status.temperature[e_device_temperature_fan_actual], tc_status.temperature[e_device_temperature_fan_nominal],
-				tc_status.flag[e_device_flag_start], tc_status.flag[e_device_flag_dehumidifier], tc_status.flag[e_device_flag_co2]);
+				tc_status.flag[e_device_flag_start], tc_status.flag[e_device_flag_dehumidifier], tc_status.flag[e_device_flag_co2],
+				tc_status.humidity);
 		fclose(stream);
 	}
 }
 
-void p_device_status_retrieve(void) {
+void p_device_status_retrieve_chamber(void) {
 	static unsigned char *device_status = "$00I\r\n";
 	unsigned char buffer[d_death_valley_device_size], *pointer, *next;
 	int readed, done = d_false, tries = 0, index = 0, step = 0;
@@ -91,11 +116,36 @@ void p_device_status_retrieve(void) {
 							}
 							pointer++;
 						}
-					p_device_status_retrieve_log();
 					done = d_true;
 				}
 			}
 		} while ((!done) && (tries++ < d_death_valley_device_tries));
+}
+
+void p_device_status_retrieve_humidity(void) {
+	static unsigned char *device_status = "{99RDD}\r\n";
+	unsigned char buffer[d_death_valley_device_size], *pointer;
+	int readed, done = d_false, tries = 0, index = 0, step = 0;
+	if (hu_descriptor != d_rs232_null)
+		do {
+			if ((f_rs232_write(hu_descriptor, device_status, f_string_strlen(device_status))) > 0) {
+				memset(buffer, 0, d_death_valley_device_size);
+				//if (((readed = f_rs232_read_packet(hu_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL,
+								//NULL, 0)) > 0) && (readed == d_death_valley_device_answer_size)) {
+				if ((readed = f_rs232_read_packet(hu_descriptor, buffer, d_death_valley_device_size, d_death_valley_device_timeout,
+								NULL, NULL, 0)) > 0) {
+					pointer = buffer;
+					//printf("\n%s\n", pointer);
+					done = d_true;
+				}
+			}
+		} while ((!done) && (tries++ < d_death_valley_device_tries));
+}
+
+void p_device_status_retrieve(void) {
+	p_device_status_retrieve_chamber();
+	p_device_status_retrieve_humidity();
+	p_device_status_retrieve_log();
 }
 
 void p_device_status_temperature(const char *kind, enum e_device_temperatures actual, enum e_device_temperatures nominal, int output) {
@@ -123,7 +173,7 @@ int f_device_status(char **tokens, size_t element, int output) {
 	for (index = 0; tc_configuration[index].initialized; ++index)
 		p_device_status_temperature(tc_configuration[index].description, tc_configuration[index].actual_temperature, tc_configuration[index].temperature,
 				output);
-	p_device_status_flag("thermal chamber", e_device_flag_start, output);
+	p_device_status_flag("thermal device", e_device_flag_start, output);
 	p_device_status_flag("dehumidifier   ", e_device_flag_dehumidifier, output);
 	p_device_status_flag("CO2 cool       ", e_device_flag_co2, output);
 	return result;
@@ -184,7 +234,7 @@ int p_device_set_key(const char *raw_key, float value, int output) {
 int p_device_set_flag(char **tokens, size_t elements, int output, enum e_device_flags flag) {
 	char message[d_string_buffer_size], *flag_descriptions[] = {
 		"empty",
-		"chamber",
+		"device",
 		"error",
 		"temperature",
 		"dehumidifier",
@@ -237,7 +287,7 @@ int f_device_set(char **tokens, size_t elements, int output) {
 	return result;
 }
 
-int f_device_set_chamber(char **tokens, size_t elements, int output) {
+int f_device_set_device(char **tokens, size_t elements, int output) {
 	return p_device_set_flag(tokens, elements, output, e_device_flag_start);
 }
 
@@ -286,9 +336,21 @@ int f_device_test(char **tokens, size_t elements, int output) {
 	return result;
 }
 
-void f_device_close(void) {
+void p_device_close_chamber(void) {
 	if (tc_descriptor != d_rs232_null) {
 		f_rs232_close(tc_descriptor);
 		tc_descriptor = d_rs232_null;
 	}
+}
+
+void p_device_close_humidity(void) {
+	if (hu_descriptor != d_rs232_null) {
+		f_rs232_close(hu_descriptor);
+		hu_descriptor = d_rs232_null;
+	}
+}
+
+void f_device_close(void) {
+	p_device_close_chamber();
+	p_device_close_humidity();
 }

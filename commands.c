@@ -18,13 +18,13 @@
 #include "commands.h"
 #include "device.h"
 struct s_console_command v_commands[] = {
-	{"status", "(usage: status) update details about thermic chamber",
+	{"status", "(usage: status) update details about thermic device",
 		(struct s_console_parameter[]){
 			{.initialized = d_false}
 		},
 		&f_commands_status, e_console_level_guest, d_true
 	},
-	{"configure", "(usage: configure) update configuration on the thermic chamber",
+	{"configure", "(usage: configure) update configuration on the thermic device",
 		(struct s_console_parameter[]){
 			{.initialized = d_false}
 		},
@@ -56,8 +56,8 @@ struct s_console_command v_commands[] = {
 		},
 		&f_commands_wait, e_console_level_guest, d_true
 	},
-	d_death_valley_commands_SET(chamber,"(usage: start -on | start -off) this command turns on/off the thermal chamber"),
-	d_death_valley_commands_SET(dehumidifier, "(usage: dehumidifier -on | dehumidifier -off) this command turns on/off the dehumidifier of the chamber"),
+	d_death_valley_commands_SET(chamber,"(usage: chamber -on | chamber -off) this command turns on/off the thermal device"),
+	d_death_valley_commands_SET(dehumidifier, "(usage: dehumidifier -on | dehumidifier -off) this command turns on/off the dehumidifier of the device"),
 	d_death_valley_commands_SET(co2, "(usage: co2 -on | co2 -off) this command turns on/off the CO2 cooler"),
 	{"load", "(usage: load -f /path/file.dv) this command runs a batch of actions",
 		(struct s_console_parameter[]){
@@ -102,7 +102,7 @@ int f_commands_wait(struct s_console *console, struct s_console_command *command
 }
 
 int f_commands_set_chamber(struct s_console *console, struct s_console_command *command, char **tokens, size_t elements, int output) {
-	return f_device_set_chamber(tokens, elements, output);
+	return f_device_set_device(tokens, elements, output);
 }
 
 int f_commands_set_dehumidifier(struct s_console *console, struct s_console_command *command, char **tokens, size_t elements, int output) {
