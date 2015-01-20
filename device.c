@@ -53,7 +53,7 @@ int p_device_open_humidity(int descriptor) {
 	int result = d_true;
 	if ((hu_descriptor == d_rs232_null) && (f_string_strlen(hu_device_link) > 0)) {
 		if ((result = f_rs232_open(hu_device_link, e_rs232_baud_19200, e_rs232_bits_8, e_rs232_stops_1_bit, e_rs232_parity_no,
-						e_rs232_flow_control_software, &hu_descriptor, NULL)))
+						e_rs232_flow_control_no, &hu_descriptor, NULL)))
 			snprintf(buffer, d_string_buffer_size, "humidity sensor is ready and %sonline%s\n", v_console_styles[e_console_style_green],
 					v_console_styles[e_console_style_reset]);
 		else {
@@ -98,7 +98,7 @@ void p_device_status_retrieve_chamber(void) {
 			if ((f_rs232_write(tc_descriptor, device_status, f_string_strlen(device_status))) > 0) {
 				memset(buffer, 0, d_death_valley_device_size);
 				if (((readed = f_rs232_read_packet(tc_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL,
-								NULL, 0)) > 0) && (readed == d_death_valley_device_answer_size)) {
+								NULL, 0)) > 0) && (readed == d_death_valley_device_answer_chamber_size)) {
 					pointer = buffer;
 					while ((step < e_device_temperature_null) && (next = strchr(pointer, ' '))) {
 						*next = '\0';
@@ -123,20 +123,21 @@ void p_device_status_retrieve_chamber(void) {
 }
 
 void p_device_status_retrieve_humidity(void) {
-	static unsigned char *device_status = "{99RDD}\r\n";
-	unsigned char buffer[d_death_valley_device_size], *pointer;
-	int readed, done = d_false, tries = 0, index = 0, step = 0;
+	static unsigned char *device_status = "{F00RDD}\r\n";
+	unsigned char buffer[d_death_valley_device_size], *pointer, *next;
+	int readed, done = d_false, tries = 0;
 	if (hu_descriptor != d_rs232_null)
 		do {
 			if ((f_rs232_write(hu_descriptor, device_status, f_string_strlen(device_status))) > 0) {
 				memset(buffer, 0, d_death_valley_device_size);
-				//if (((readed = f_rs232_read_packet(hu_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL,
-								//NULL, 0)) > 0) && (readed == d_death_valley_device_answer_size)) {
-				if ((readed = f_rs232_read_packet(hu_descriptor, buffer, d_death_valley_device_size, d_death_valley_device_timeout,
-								NULL, NULL, 0)) > 0) {
-					pointer = buffer;
-					//printf("\n%s\n", pointer);
-					done = d_true;
+				if (((readed = f_rs232_read_packet(hu_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL,
+								NULL, 0)) > 0) && (readed == d_death_valley_device_answer_humidity_size)) {
+					if ((pointer = strchr(buffer, ';')) && (next = strchr(pointer, ';'))) {
+						/* the humidity value is between the first semicolon and the second semicolon */
+						*next = '\0';
+						tc_status.humidity = atof(pointer);
+						done = d_true;
+					}
 				}
 			}
 		} while ((!done) && (tries++ < d_death_valley_device_tries));

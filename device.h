@@ -20,15 +20,15 @@
 #include <miranda/ground.h>
 #include "commands.h"
 #define d_death_valley_device_log "death_valley.log"
-#define d_death_valley_device_size 128
+#define d_death_valley_device_size 256
 #define d_death_valley_device_timeout 75000
 #define d_death_valley_device_configure_prefix 47
 #define d_death_valley_device_wait 1000000
 #define d_death_valley_device_tries 5
 #define d_death_valley_device_configuration_null -1
 #define d_death_valley_device_answer_extra_tail 3
-#define d_death_valley_device_answer_size (100+1+d_death_valley_device_answer_extra_tail) /* 100 character + <CR> + 3 times '\0' */
-#define d_death_valley_device_answer_humidity_size
+#define d_death_valley_device_answer_chamber_size (100+1+d_death_valley_device_answer_extra_tail) /* 100 characters + <CR> + 3 times '\0' */
+#define d_death_valley_device_answer_humidity_size (104+1) /* 104 characters + <CR> */
 typedef enum e_device_temperatures {
 	e_device_temperature_main_nominal = 0,
 	e_device_temperature_main_actual,

@@ -83,8 +83,10 @@ int main (int argc, char *argv[]) {
 					snprintf(console->prefix, d_string_buffer_size, "\r[%sdisconnected%s]> ", v_console_styles[e_console_style_red],
 							v_console_styles[e_console_style_reset]);
 				else
-					snprintf(console->prefix, d_string_buffer_size, "\r[%sconnected%s]> ", v_console_styles[e_console_style_green],
-							v_console_styles[e_console_style_reset]);
+					snprintf(console->prefix, d_string_buffer_size, "\r[temperature: %s%.02f%s/%.02f C| humidity: %.02f %%RH]> ",
+							v_console_styles[e_console_style_bold], tc_status.temperature[e_device_temperature_main_actual],
+							v_console_styles[e_console_style_reset], tc_status.temperature[e_device_temperature_main_nominal],
+							tc_status.humidity);
 				usleep(d_death_valley_loop_sleep);
 				current = time(NULL);
 				if ((current-before) > d_death_valley_loop_status) {
@@ -95,7 +97,7 @@ int main (int argc, char *argv[]) {
 			f_console_destroy(&console);
 		}
 	} else
-		fprintf(stderr, "usage: %s <path to USB-Serial device>\n", argv[0]);
+		fprintf(stderr, "usage: %s <path to USB-Serial device> {path to humidity sensor}\n", argv[0]);
 	f_memory_destroy();
 	return 0;
 }
