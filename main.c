@@ -83,10 +83,10 @@ int main (int argc, char *argv[]) {
 					snprintf(console->prefix, d_string_buffer_size, "\r[%sdisconnected%s]> ", v_console_styles[e_console_style_red],
 							v_console_styles[e_console_style_reset]);
 				else
-					snprintf(console->prefix, d_string_buffer_size, "\r[temperature: %s%.02f%s/%.02f C| humidity: %.02f %%RH]> ",
+					snprintf(console->prefix, d_string_buffer_size, "\r[%s%.02f%s/%.02f C| %s%.02f%s %%RH]> ",
 							v_console_styles[e_console_style_bold], tc_status.temperature[e_device_temperature_main_actual],
 							v_console_styles[e_console_style_reset], tc_status.temperature[e_device_temperature_main_nominal],
-							tc_status.humidity);
+							v_console_styles[e_console_style_bold], tc_status.humidity, v_console_styles[e_console_style_reset]);
 				usleep(d_death_valley_loop_sleep);
 				current = time(NULL);
 				if ((current-before) > d_death_valley_loop_status) {

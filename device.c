@@ -132,7 +132,7 @@ void p_device_status_retrieve_humidity(void) {
 				memset(buffer, 0, d_death_valley_device_size);
 				if (((readed = f_rs232_read_packet(hu_descriptor, buffer, d_death_valley_device_size,  d_death_valley_device_timeout, NULL,
 								NULL, 0)) > 0) && (readed == d_death_valley_device_answer_humidity_size)) {
-					if ((pointer = strchr(buffer, ';')) && (next = strchr(pointer, ';'))) {
+					if ((pointer = strchr(buffer, ';')) && (next = strchr(++pointer, ';'))) {
 						/* the humidity value is between the first semicolon and the second semicolon */
 						*next = '\0';
 						tc_status.humidity = atof(pointer);
