@@ -1,6 +1,6 @@
 /*
  * death_valley
- * Copyright (C) 2014 Andrea Nardinocchi (andrea@nardinan.it)
+ * Copyright (C) 2015 Andrea Nardinocchi (andrea@nardinan.it)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 const char *v_console_styles[] = {
 	"\x1B[0m",
 	"\x1B[1m",
+	"\x1B[3m",
 	"\x1B[4m",
 	"\x1B[5m",
 	"\x1B[7m",
@@ -26,6 +27,7 @@ const char *v_console_styles[] = {
 	"\x1B[32m",
 	"\x1B[33m",
 	"\x1B[34m",
+	"\x1b[37m",
 	"\x1B[37m"
 };
 int f_console_parameter(const char *symbol, char **tokens, size_t elements, int is_flag) {
@@ -200,8 +202,8 @@ int f_console_read(struct s_console *console, struct s_console_input *input, int
 	f_console_refresh(console, input, output);
 	FD_ZERO(&descriptor_set);
 	FD_SET(console->descriptor, &descriptor_set);
-	if (select(console->descriptor+1, &descriptor_set, NULL, NULL, &timeout) > 0) {
-		if ((read(console->descriptor, &incoming_character, sizeof(char))) > 0) {
+	if (select(console->descriptor+1, &descriptor_set, NULL, NULL, &timeout) > 0)
+		if (((read(console->descriptor, &incoming_character, sizeof(char))) > 0) && (console->input_enabled)) {
 			if (input->special_pointer > 0) {
 				input->special[input->special_pointer++] = incoming_character;
 				if (input->special_pointer >= d_console_special_size) {
@@ -249,7 +251,6 @@ int f_console_read(struct s_console *console, struct s_console_input *input, int
 				}
 			}
 		}
-	}
 	return input->ready;
 }
 

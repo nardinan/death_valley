@@ -1,6 +1,6 @@
 /*
  * death_valley
- * Copyright (C) 2014 Andrea Nardinocchi (andrea@nardinan.it)
+ * Copyright (C) 2015 Andrea Nardinocchi (andrea@nardinan.it)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,14 @@
 #define d_console_descriptor_null -1
 #define d_console_parameter_null -1
 #define d_console_clean_line "\033[1K"
+#define d_console_clean_screen "\x1B[2J"
 #define d_console_suggestion_columns 10
 struct s_console;
 struct s_console_command;
 typedef enum e_console_style {
 	e_console_style_reset = 0,
 	e_console_style_bold,
+	e_console_style_italic,
 	e_console_style_underline,
 	e_console_style_blink,
 	e_console_style_reverse,
@@ -43,6 +45,7 @@ typedef enum e_console_style {
 	e_console_style_green,
 	e_console_style_yellow,
 	e_console_style_blue,
+	e_console_style_gray,
 	e_console_style_white
 } e_console_style;
 typedef enum e_console_level {
@@ -73,7 +76,7 @@ typedef struct s_console {
 	struct s_console_command *commands;
 	struct termios old_configuration, current_configuration;
 	char history[d_console_history_size][d_string_buffer_size], prefix[d_string_buffer_size];
-	int history_last, history_pointer, descriptor;
+	int history_last, history_pointer, descriptor, input_enabled;
 } s_console;
 extern int f_console_parameter(const char *symbol, char **tokens, size_t elements, int is_flag);
 extern int f_console_init(struct s_console **console, struct s_console_command *commands, int descriptor);
