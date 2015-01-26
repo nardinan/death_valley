@@ -115,11 +115,11 @@ int f_death_valley_init(int descriptor) {
 			console->level = e_console_level_guest;
 		}
 	}
-	d_death_valley_module(status, descriptor, "devices") {
+	d_death_valley_module(status, descriptor, "unities") {
 		v_devices = v_initialized_devices;
 		if (descriptor != d_console_descriptor_null) {
 			for (index = 0; v_devices[index].code != 0xff; index++) {
-				snprintf(buffer, d_console_output_size, "\t[required unity] name: %s%-32s%s\tcode: 0x%02x\n",
+				snprintf(buffer, d_console_output_size, "\t[unity] name: %s%-32s%s\tcode: 0x%02x\n",
 						v_console_styles[e_console_style_bold], v_devices[index].description, v_console_styles[e_console_style_reset],
 						v_devices[index].code);
 				write(descriptor, buffer, f_string_strlen(buffer));
