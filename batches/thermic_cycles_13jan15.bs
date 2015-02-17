@@ -12,26 +12,26 @@ sleep -s 3600
 # total 13 hours
 set -k main -v 20
 chamber -on
-configure
+apply
 sleep -s 3600
 set -k main -v 40
-configure
+apply
 sleep -s 7200
 set -k main -v 60
-configure
+apply
 sleep -s 7200
 set -k main -v 0
-configure
+apply
 sleep -s 7200
 set -k main -v -20
-configure
+apply
 sleep -s 7200
 set -k main -v -40
-configure
+apply
 sleep -s 7200
 set -k main -v 20
-configure
+apply
 sleep -s 7200
 chamber -off
-configure
+apply
 

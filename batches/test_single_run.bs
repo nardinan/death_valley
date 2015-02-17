@@ -4,21 +4,21 @@ sleep -s 3600
 # temperature 100
 set -k main -v 100
 chamber -on
-configure
+apply
 test -k main -bt 95 -w
 # temperature -45
 set -k main -v -40
-configure
+apply
 test -k main -lt -35 -w
 # temperature 100
 set -k main -v 100
-configure
+apply
 test -k main -bt 95 -w
 sleep -s 3600
 # temperature 20
 set -k main -v 10
-configure
+apply
 test -k main -lt 15
 # off
 chamber -off
-configure
+apply

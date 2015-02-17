@@ -9,122 +9,122 @@ sleep -s 3600
 # total 12 hours + something else
 set -k main -v -40
 chamber -on
-configure
+apply
 test -k main -lt -30 -w
 set -k main -v -30
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -25
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -20
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -15
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -10
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -5
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 0
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 5
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 10
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 15
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 20
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 25
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 30
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 35
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 40
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 45
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 50
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 55
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 60
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 55
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 50
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 45
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 40
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 35
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 30
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 25
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 20
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 15
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 10
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 5
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 0
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -5
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -10
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -15
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -20
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -25
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v -30
-configure
+apply
 sleep -s 1200 # 20 minutes
 set -k main -v 25
-configure
+apply
 test -k main -bt 20 -w
 chamber -off
-configure
+apply
 
