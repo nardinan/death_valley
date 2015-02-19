@@ -1,6 +1,6 @@
 objects = console.o commands.o device.o chamber_device.o hcwin_device.o log_device.o telnet_device.o death_valley.o
 cc = gcc -g
-cflags = -Wall -I.. -Wno-variadic-macros -Wno-missing-braces -Wno-gnu -Wno-pointer-sign -c -pedantic
+cflags = -Wall -I.. -Wno-variadic-macros -Wno-missing-braces -Wno-pointer-sign -c -pedantic
 lflags = -Wall
 liblink = -L../miranda -L/usr/lib64 -L/usr/lib -lpthread -lmiranda_ground
 exec = death_valley.bin
