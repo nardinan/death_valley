@@ -233,6 +233,7 @@ int f_chamber_device_test(unsigned char code, char **tokens, size_t elements, in
 	}
 	return result;
 }
+
 int p_chamber_device_set_flag(unsigned char code, enum e_chamber_device_flags flag, char **tokens, size_t elements, int output) {
 	char message[d_console_output_size], *flag_descriptions[] = {
 		"empty",
