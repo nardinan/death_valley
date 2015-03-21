@@ -17,7 +17,6 @@
  */
 #ifndef death_valley_device_h
 #define death_valley_device_h
-#include "console.h"
 #include "chamber_device.h"
 #include "hcwin_device.h"
 #include "log_device.h"

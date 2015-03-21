@@ -17,7 +17,7 @@
  */
 #ifndef death_valley_chamber_device_h
 #define death_valley_chamber_device_h
-#include "console.h"
+#include <miranda/ground.h>
 #define d_chamber_device_entries 1
 #define d_chamber_device_refresh_timeout 3 	/* seconds */
 #define d_chamber_device_condition_timeout 3	/* seconds */

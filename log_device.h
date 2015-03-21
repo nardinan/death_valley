@@ -17,7 +17,6 @@
  */
 #ifndef death_valley_log_device_h
 #define death_valley_log_device_h
-#include "console.h"
 #include "chamber_device.h"
 #include "hcwin_device.h"
 #define d_log_device_refresh_timeout 3 	/* seconds */

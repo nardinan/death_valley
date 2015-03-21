@@ -17,7 +17,7 @@
  */
 #ifndef death_valley_commands_h
 #define death_valley_commands_h
-#include "console.h"
+#include <miranda/ground.h>
 #define d_commands_queue 1024
 #define d_commands_empty_queue -1
 #define d_commands_sleep 100000

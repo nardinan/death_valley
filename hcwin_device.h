@@ -17,7 +17,7 @@
  */
 #ifndef death_valley_hcwin_device_h
 #define death_valley_hcwin_device_h
-#include "console.h"
+#include <miranda/ground.h>
 #define d_hcwin_device_entries 1
 #define d_hcwin_device_humidity_position 1
 #define d_hcwin_device_temperature_position 5
