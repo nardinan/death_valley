@@ -21,6 +21,7 @@
 #define d_chamber_device_entries 1
 #define d_chamber_device_refresh_timeout 3 	/* seconds */
 #define d_chamber_device_condition_timeout 3	/* seconds */
+#define d_chamber_device_batch_timeout 1	/* seconds */
 #define d_chamber_device_timeout 75000		/* useconds */
 #define d_chamber_device_current 0
 #define d_chamber_device_defined 1
@@ -29,6 +30,7 @@
 #define d_chamber_device_configure_prefix 47
 #define d_chamber_device_configure_postfix 3
 #define d_chamber_device_configuration_null -1
+#define d_chamber_device_batches 1024
 typedef enum e_chamber_device_temperatures {
 	e_chamber_device_temperature_main_nominal = 0,
 	e_chamber_device_temperature_main_actual,
@@ -76,13 +78,13 @@ typedef struct s_chamber_device_condition {
 typedef struct s_chamber_device {
 	/* do not touch */
 	int descriptor;
-	char link[d_string_buffer_size];
+	char link[d_string_buffer_size], batches[d_chamber_device_batches][d_string_buffer_size];
 	/* ok, now you can add your values */
 	float temperature[2][e_chamber_device_temperature_null];
-	int flag[2][e_chamber_device_flag_null];
+	int flag[2][e_chamber_device_flag_null], batch_pointer;
 	struct s_chamber_device_condition condition;
 	struct termios old_configuration;
-	time_t last_refresh, last_condition, active_from;
+	time_t last_refresh, last_condition, last_batch, active_from;
 } s_chamber_device;
 typedef struct s_chamber_device_parameters {
 	int initialized;
@@ -102,15 +104,17 @@ extern int p_chamber_device_set_key(const char *raw_key, float value, int output
 extern int f_chamber_device_set(unsigned char code, char **tokens, size_t elements, int output);
 extern int p_chamber_device_test_condition(unsigned char code);
 extern int f_chamber_device_test(unsigned char code, char **tokens, size_t elements, int output);
-extern int f_chamber_device_set_flag(unsigned char code, enum e_chamber_device_flags flag, char **tokens, size_t elements, int output);
+extern int p_chamber_device_set_flag(unsigned char code, enum e_chamber_device_flags flag, char **tokens, size_t elements, int output);
 extern int f_chamber_device_set_chamber(unsigned char code, char **tokens, size_t elements, int output);
 extern int f_chamber_device_set_dehumidifier(unsigned char code, char **tokens, size_t elements, int output);
 extern int f_chamber_device_set_co2(unsigned char code, char **tokens, size_t elements, int output);
+extern int f_chamber_device_load(unsigned char code, char **tokens, size_t elements, int output);
 extern int f_chamber_device_sleep(unsigned char code, char **tokens, size_t elements, int output);
 extern int f_chamber_device_enabled(unsigned char code);
 extern int f_chamber_device_initialize(unsigned char code);
 extern int f_chamber_device_destroy(unsigned char code);
 extern int p_chamber_device_refresh_status(unsigned char code);
 extern void p_chamber_device_refresh_console(unsigned char code, struct s_console *console, time_t current_timestamp);
+extern void p_chamber_device_refresh_batches(unsigned char code, struct s_console *console, time_t current_timestamp);
 extern int f_chamber_device_refresh(unsigned char code, struct s_console *console);
 #endif

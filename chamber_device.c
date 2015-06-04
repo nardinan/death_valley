@@ -33,7 +33,7 @@ void f_chamber_device_description(unsigned char code, char *destination, size_t 
 	snprintf(destination, size, "#%d [%s VT4010] ", code, v_chamber_device[code].link);
 	if (f_chamber_device_initialize(code)) {
 		if (v_chamber_device[code].flag[d_chamber_device_current][e_chamber_device_flag_start]) {
-			snprintf(status, d_string_buffer_size, "[connected: %sON%s] ", v_console_styles[e_console_style_green],
+			snprintf(status, d_string_buffer_size, "[connected | %sON%s ] ", v_console_styles[e_console_style_green],
 					v_console_styles[e_console_style_reset]);
 			if (v_chamber_device[code].temperature[d_chamber_device_current][e_chamber_device_temperature_main_nominal] !=
 					v_chamber_device[code].temperature[d_chamber_device_current][e_chamber_device_temperature_main_actual])
@@ -48,7 +48,7 @@ void f_chamber_device_description(unsigned char code, char *destination, size_t 
 						v_chamber_device[code].temperature[d_chamber_device_current][e_chamber_device_temperature_main_nominal]);
 			strncat(status, temperature, (d_string_buffer_size-f_string_strlen(status)));
 		} else
-			snprintf(status, d_string_buffer_size, "[connected: %sOFF%s]", v_console_styles[e_console_style_red],
+			snprintf(status, d_string_buffer_size, "[connected | %sOFF%s]", v_console_styles[e_console_style_red],
 					v_console_styles[e_console_style_reset]);
 
 	} else
@@ -81,12 +81,30 @@ void p_chamber_device_status_temperature(unsigned char code, enum e_chamber_devi
 }
 
 void p_chamber_device_status_flag(unsigned char code, enum e_chamber_device_flags flag, char *description, char *destination, size_t size) {
-	if (v_chamber_device[code].flag[flag])
-		snprintf(destination, size, "\t[%s%-16s%s %sON %s]\n", v_console_styles[e_console_style_bold], description,
-				v_console_styles[e_console_style_reset], v_console_styles[e_console_style_green], v_console_styles[e_console_style_reset]);
+	char current_flag[d_console_output_size];
+	if (v_chamber_device[code].flag[d_chamber_device_defined][flag] != v_chamber_device[code].flag[d_chamber_device_current][flag]) {
+		if (v_chamber_device[code].flag[d_chamber_device_defined][flag])
+			snprintf(current_flag, d_console_output_size, "%s%sON %s", v_console_styles[e_console_style_blink],
+					v_console_styles[e_console_style_red], v_console_styles[e_console_style_reset]);
+		else
+			snprintf(current_flag, d_console_output_size, "%s%sOFF%s", v_console_styles[e_console_style_blink],
+					v_console_styles[e_console_style_red], v_console_styles[e_console_style_reset]);
+	} else {
+		if (v_chamber_device[code].flag[d_chamber_device_defined][flag])
+			snprintf(current_flag, d_console_output_size, "%sON %s", v_console_styles[e_console_style_green],
+					v_console_styles[e_console_style_reset]);
+		else
+			snprintf(current_flag, d_console_output_size, "%sOFF%s", v_console_styles[e_console_style_green],
+					v_console_styles[e_console_style_reset]);
+	}
+	if (v_chamber_device[code].flag[d_chamber_device_current][flag])
+		snprintf(destination, size, "\t[%s%-16s%s %sON %s | %s]\n", v_console_styles[e_console_style_bold], description,
+				v_console_styles[e_console_style_reset], v_console_styles[e_console_style_green], v_console_styles[e_console_style_reset],
+				current_flag);
 	else
-		snprintf(destination, size, "\t[%s%-16s%s %sOFF%s]\n", v_console_styles[e_console_style_bold], description,
-				v_console_styles[e_console_style_reset], v_console_styles[e_console_style_red], v_console_styles[e_console_style_reset]);
+		snprintf(destination, size, "\t[%s%-16s%s %sOFF%s | %s]\n", v_console_styles[e_console_style_bold], description,
+				v_console_styles[e_console_style_reset], v_console_styles[e_console_style_red], v_console_styles[e_console_style_reset],
+				current_flag);
 }
 
 int f_chamber_device_status(unsigned char code, char **tokens, size_t elements, int output) {
@@ -128,6 +146,7 @@ int f_chamber_device_apply(unsigned char code, char **tokens, size_t elements, i
 	int result = d_false, index;
 	if (f_chamber_device_initialize(code)) {
 		memset(buffer_command, 0, d_chamber_device_message_size);
+		v_chamber_device[code].flag[d_chamber_device_defined][e_chamber_device_flag_temperature] = 1;
 		snprintf(buffer_command, d_chamber_device_message_size, "%s %06.01f %06.01f %06.01f %06.01f %06.01f %06.01f 0000000000000000%s",
 				chamber_configure, v_chamber_device[code].temperature[d_chamber_device_defined][e_chamber_device_temperature_main_nominal],
 				v_chamber_device[code].temperature[d_chamber_device_defined][e_chamber_device_temperature_pt100_A_nominal],
@@ -138,7 +157,7 @@ int f_chamber_device_apply(unsigned char code, char **tokens, size_t elements, i
 		pointer = (buffer_command+d_chamber_device_configure_prefix);
 		for (index = 0; index < e_chamber_device_flag_null; ++pointer, ++index)
 			*pointer = (v_chamber_device[code].flag[d_chamber_device_defined][index])?'1':'0';
-		if (f_rs232_write(v_chamber_device[code].descriptor, buffer_command, f_string_strlen(buffer_command)+d_chamber_device_configure_postfix) > 0)
+		if (f_rs232_write(v_chamber_device[code].descriptor, buffer_command, f_string_strlen(buffer_command)) > 0)
 			if (f_rs232_read_packet(v_chamber_device[code].descriptor, buffer, d_chamber_device_message_size, d_chamber_device_timeout,
 						NULL, NULL, 0) > 0)
 				result = d_true;
@@ -192,7 +211,8 @@ int p_chamber_device_test_condition(unsigned char code) {
 	float actual_value;
 	int result = d_false;
 	p_chamber_device_refresh_status(code);
-	actual_value = v_chamber_device[code].temperature[d_chamber_device_current][v_chamber_parameters[v_chamber_device[code].condition.parameter_pointer].temperature];
+	actual_value = v_chamber_device[code].temperature[d_chamber_device_current][v_chamber_parameters[v_chamber_device[code].condition.parameter_pointer].
+		actual_temperature];
 	if (((v_chamber_device[code].condition.test == e_chamber_device_test_bigger_than) && (actual_value > v_chamber_device[code].condition.value)) ||
 			((v_chamber_device[code].condition.test == e_chamber_device_test_lower_than) && (actual_value < v_chamber_device[code].condition.value)) ||
 			((v_chamber_device[code].condition.test == e_chamber_device_test_equal_to) && (actual_value == v_chamber_device[code].condition.value)))
@@ -285,6 +305,37 @@ int f_chamber_device_set_co2(unsigned char code, char **tokens, size_t elements,
 	return p_chamber_device_set_flag(code, e_chamber_device_flag_co2, tokens, elements, output);
 }
 
+int f_chamber_device_load(unsigned char code, char **tokens, size_t elements, int output) {
+	char message[d_console_output_size], *raw_value = tokens[f_console_parameter("-f", tokens, elements, d_false)], *pointer;
+	FILE *stream;
+	int index, result = d_false;
+	memset(v_chamber_device[code].batches, 0, (d_string_buffer_size*d_chamber_device_batches));
+	if ((stream = fopen(raw_value, "r"))) {
+		while ((!feof(stream)) && (index < d_chamber_device_batches))
+			if (fgets(v_chamber_device[code].batches[index], d_string_buffer_size, stream) > 0) {
+				if ((pointer = strchr(v_chamber_device[code].batches[index], '#')))
+					*pointer = '\0';
+				if (f_string_strlen(v_chamber_device[code].batches[index]) > 0) {
+					f_string_trim(v_chamber_device[code].batches[index]);
+					++index;
+				}
+			}
+		fclose(stream);
+		v_chamber_device[code].batch_pointer = 0;
+		v_chamber_device[code].last_batch = time(NULL);
+		snprintf(message, d_console_output_size, "file '%s%s%s' has been %sloaded%s\n", v_console_styles[e_console_style_bold], raw_value,
+				v_console_styles[e_console_style_reset], v_console_styles[e_console_style_green], v_console_styles[e_console_style_reset]);
+		result = d_true;
+	} else
+		snprintf(message, d_console_output_size, "file '%s%s%s' not found\n", v_console_styles[e_console_style_bold], raw_value,
+				v_console_styles[e_console_style_reset]);
+	if (output != d_console_descriptor_null) {
+		write(output, message, f_string_strlen(message));
+		fsync(output);
+	}
+	return result;
+}
+
 int f_chamber_device_sleep(unsigned char code, char **tokens, size_t elements, int output) {
 	char message[d_console_output_size], *raw_value = tokens[f_console_parameter("-s", tokens, elements, d_false)];
 	int value, result = d_false;
@@ -355,13 +406,15 @@ int p_chamber_device_refresh_status(unsigned char code) {
 }
 
 void p_chamber_device_refresh_console(unsigned char code, struct s_console *console, time_t current_timestamp) {
-	char prefix[d_console_output_size] = {'\0'}, buffer[d_console_output_size], test_symbols[] = {'-', '>', '<', '='};
+	char prefix[d_console_output_size] = {'\0'}, postfix[d_console_output_size] = {'\0'}, buffer[d_console_output_size],
+	     test_symbols[] = {'-', '>', '<', '='};
 	float actual_value;
 	if (v_chamber_device[code].active_from > current_timestamp) {
 		snprintf(prefix, d_console_output_size, "{%ssleeping for %d seconds%s}", v_console_styles[e_console_style_blue],
 				(int)(v_chamber_device[code].active_from-current_timestamp), v_console_styles[e_console_style_reset]);
 	} else if (v_chamber_device[code].condition.running) {
-		actual_value = v_chamber_device[code].temperature[d_chamber_device_current][v_chamber_parameters[v_chamber_device[code].condition.parameter_pointer].temperature];
+		actual_value = v_chamber_device[code].temperature[d_chamber_device_current][v_chamber_parameters[v_chamber_device[code].condition.parameter_pointer].
+			actual_temperature];
 		snprintf(prefix, d_console_output_size, "{%swaiting until %6.01f %c %6.01f%s}", v_console_styles[e_console_style_blue],
 				v_chamber_device[code].condition.value, test_symbols[v_chamber_device[code].condition.test], actual_value,
 				v_console_styles[e_console_style_reset]);
@@ -371,10 +424,33 @@ void p_chamber_device_refresh_console(unsigned char code, struct s_console *cons
 			v_chamber_device[code].last_condition = current_timestamp;
 		}
 	}
+	if (v_chamber_device[code].batch_pointer > d_chamber_device_configuration_null)
+		snprintf(postfix, d_console_output_size, "[%sbatch%s]", v_console_styles[e_console_style_blink], v_console_styles[e_console_style_reset]);
 	if (console) {
 		f_chamber_device_description(code, buffer, d_console_output_size);
-		snprintf(console->prefix, d_console_output_size, "\r%s%s > ", prefix, buffer);
+		snprintf(console->prefix, d_console_output_size, "\r%s%s%s > ", prefix, buffer, postfix);
 	}
+}
+
+void p_chamber_device_refresh_batches(unsigned char code, struct s_console *console, time_t current_timestamp) {
+	struct s_console_input input = { .ready = d_true };
+	if (v_chamber_device[code].batch_pointer > d_chamber_device_configuration_null)
+		if ((current_timestamp-v_chamber_device[code].last_batch) >= d_chamber_device_batch_timeout)
+			if ((v_chamber_device[code].active_from <= current_timestamp) && (!v_chamber_device[code].condition.running)) {
+				if ((input.data_length = f_string_strlen(v_chamber_device[code].batches[v_chamber_device[code].batch_pointer])) > 0) {
+					if (console) {
+						strncpy(input.input, v_chamber_device[code].batches[v_chamber_device[code].batch_pointer],
+								d_string_buffer_size);
+						input.data_pointer = input.data_length;
+						fprintf(stdout, "ghost-command[%s%s%s]\n", v_console_styles[e_console_style_blue], input.input,
+								v_console_styles[e_console_style_reset]);
+						f_console_execute(console, &input, STDOUT_FILENO);
+					}
+					++(v_chamber_device[code].batch_pointer);
+					v_chamber_device[code].last_batch = current_timestamp;
+				} else
+					v_chamber_device[code].batch_pointer = d_chamber_device_configuration_null;
+			}
 }
 
 int f_chamber_device_refresh(unsigned char code, struct s_console *console) {
@@ -394,6 +470,7 @@ int f_chamber_device_refresh(unsigned char code, struct s_console *console) {
 			v_chamber_device[code].last_refresh = current_timestamp;
 		}
 	p_chamber_device_refresh_console(code, console, current_timestamp);
+	p_chamber_device_refresh_batches(code, console, current_timestamp);
 	return result;
 }
 

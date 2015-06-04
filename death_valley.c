@@ -28,7 +28,7 @@ struct s_console_input input = { .ready = d_true };
 struct s_device v_initialized_devices[] = {
 	{0x00, "VT4010 Thermical chamber",
 		{&f_chamber_device_status, &f_chamber_device_apply, &f_chamber_device_set, &f_chamber_device_test, &f_chamber_device_set_chamber,
-			&f_chamber_device_set_dehumidifier, &f_chamber_device_set_co2, NULL, &f_chamber_device_sleep},
+			&f_chamber_device_set_dehumidifier, &f_chamber_device_set_co2, &f_chamber_device_load, &f_chamber_device_sleep},
 		{&f_chamber_device_enabled, &f_chamber_device_initialize, &f_chamber_device_destroy},
 		&f_chamber_device_refresh
 	},
@@ -57,6 +57,7 @@ void p_death_valley_sigint_interrupt(int signal) {
 	for (index = 0; index < d_chamber_device_entries; ++index) {
 		v_chamber_device[index].active_from = (time(NULL)-1);
 		v_chamber_device[index].condition.running = d_false;
+		v_chamber_device[index].batch_pointer = d_chamber_device_configuration_null;
 	}
 }
 

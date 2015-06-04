@@ -1,4 +1,4 @@
-# a simple script that set the 
+# a simple script that set the
 # waiting for an hour
 sleep -s 3600
 # temperature 100
