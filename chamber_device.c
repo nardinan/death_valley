@@ -327,7 +327,8 @@ int f_chamber_device_load(unsigned char code, char **tokens, size_t elements, in
 				v_console_styles[e_console_style_reset], v_console_styles[e_console_style_green], v_console_styles[e_console_style_reset]);
 		result = d_true;
 	} else
-		snprintf(message, d_console_output_size, "file '%s%s%s' not found\n", v_console_styles[e_console_style_bold], raw_value,
+		snprintf(message, d_console_output_size, "unable to open file '%s%s%s' (%s%s%s)\n", v_console_styles[e_console_style_bold], raw_value,
+				v_console_styles[e_console_style_reset], v_console_styles[e_console_style_red], strerror(errno),
 				v_console_styles[e_console_style_reset]);
 	if (output != d_console_descriptor_null) {
 		write(output, message, f_string_strlen(message));
