@@ -133,7 +133,6 @@ int f_death_valley_init(int descriptor) {
 }
 
 int main (int argc, char *argv[]) {
-	f_memory_init();
 	if (argc >= 2) {
 		strncpy(v_chamber_device[0].link, argv[1], d_string_buffer_size);
 		if (argc >= 3)
