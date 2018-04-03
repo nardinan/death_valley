@@ -12,12 +12,12 @@ The software has been sucessfully compiled on Linux (Scientific Linux, Ubuntu an
 
 ### Dependencies
 The software depends on the following libraries:
-* libmiranda (https://github.com/nardinan/miranda)
+* libmiranda (https://github.com/nardinan/miranda on the branch 'release_0.1')
 
 ### Compilation on Ubuntu (and possibly any other _Debian-based_ distribution), Fedora, Scientific Linux and MacOS
 Open a termina and install Miranda:
 ```bash
-$ git clone https://github.com/nardinan/miranda
+$ git clone -b release_0.1 https://github.com/nardinan/miranda
 $ cd miranda
 $ make
 $ sudo make install
