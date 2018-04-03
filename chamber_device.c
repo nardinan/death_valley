@@ -308,7 +308,7 @@ int f_chamber_device_set_co2(unsigned char code, char **tokens, size_t elements,
 int f_chamber_device_load(unsigned char code, char **tokens, size_t elements, int output) {
 	char message[d_console_output_size], *raw_value = tokens[f_console_parameter("-f", tokens, elements, d_false)], *pointer;
 	FILE *stream;
-	int index, result = d_false;
+	int index = 0, result = d_false;
 	memset(v_chamber_device[code].batches, 0, (d_string_buffer_size*d_chamber_device_batches));
 	if ((stream = fopen(raw_value, "r"))) {
 		while ((!feof(stream)) && (index < d_chamber_device_batches))
@@ -429,7 +429,7 @@ void p_chamber_device_refresh_console(unsigned char code, struct s_console *cons
 		snprintf(postfix, d_console_output_size, "[%sbatch%s]", v_console_styles[e_console_style_blink], v_console_styles[e_console_style_reset]);
 	if (console) {
 		f_chamber_device_description(code, buffer, d_console_output_size);
-		snprintf(console->prefix, d_console_output_size, "\r%s%s%s > ", prefix, buffer, postfix);
+		snprintf(console->prefix, d_string_buffer_size, "\r%s%s%s > ", prefix, buffer, postfix);
 	}
 }
 
