@@ -1,8 +1,8 @@
 objects = commands.o device.o chamber_device.o hcwin_device.o log_device.o telnet_device.o death_valley.o
 cc = gcc -g
-cflags = -Wall -I.. -Wno-variadic-macros -Wno-missing-braces -Wno-pointer-sign -c
+cflags = -Wall -I.. -I/usr/local/include -Wno-variadic-macros -Wno-missing-braces -Wno-pointer-sign -c
 lflags = -Wall
-liblink = -L/usr/lib64 -L/usr/lib -lpthread -lmiranda_ground
+liblink = -L/usr/lib64 -L/usr/lib -L/usr/local/lib -lpthread -lmiranda_ground
 exec = death_valley.bin
 
 all: $(objects)
